@@ -9,7 +9,7 @@
 
 
 // 基盤画像からcascade_holeを利用して穴画像を取得、ファイル名で仕分けするプログラム
-#define HOLES_CLASSIFIER_FILE "cascade_hole.xml"
+#define HOLES_CLASSIFIER_FILE "cascade_objects.xml"
 /* 穴検出用 */
 static cv::CascadeClassifier hole_cascade;
 
@@ -121,7 +121,7 @@ int main(int argc, const char* argv[])
 		}
 
 		if (holes.size() > 0) {
-			write_file << cv::format("%s %ld ", fname.c_str(), holes.size());
+			write_file << cv::format("%s %ld ", scene1_path.c_str(), holes.size());
 			// 検出したイメージを１ファイルづつごとに仕分けして、ポジデータのフォーマットで記録
 			for (std::vector<cv::Rect>::const_iterator it = holes.begin(), e = holes.end(); it != e; it++) {
 				cv::Mat cliphole = scene1(*it);

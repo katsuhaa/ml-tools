@@ -8,7 +8,7 @@ ano_window_name = "annotation window"
 #imshowで表示しているイメージのすのやつ
 show_ano_image = None
 #現在の表示ウインドウ大きさ
-show_disp_size = (1024, 768)
+show_disp_size = (1440,1024)
 #今表示している倍率とオフセット左上のところ？どこがいい？
 show_scale = 1.0
 show_offset = (0,0)
@@ -19,6 +19,9 @@ ano_items = []
 ano_items_idx = -1
 # 移動時のスタート地点
 start_mouse_pos = None
+#枠選択モード
+move_roi = 0
+move_roi_offset = None
 
 def _show_shape(img, dsize, offset, scale):
     poff = (max(0,offset[0]), max(0,offset[1]))
@@ -59,14 +62,16 @@ def _check_mouse_pos(item, x, y):
         return True
     return False
 
-def _search_mouse_pos_idx(items, x, y):
+def _search_mouse_pos_idx(items, idx, x, y):
+    if idx != -1:
+        if _check_mouse_pos(items[idx], x, y):
+            return idx
     for i in range(len(items)):
         if _check_mouse_pos(items[i], x, y):
             return i
     return -1
 
 def _makeshowimg(img, items, itemidx, dsize = None, offset = (0,0), scale = 1.0):
-    
     if dsize is None:
         dsize = (min(img.shape[1], 1024), min(img.shape[0], 768))
         
@@ -104,7 +109,7 @@ def mouse_event(event, x, y, flags, param):
 
     #マウス左ボタン押下時
     if event == cv2.EVENT_LBUTTONDBLCLK:
-        _search_idx = _search_mouse_pos_idx(ano_items, imgx, imgy)
+        _search_idx = _search_mouse_pos_idx(ano_items, ano_items_idx, imgx, imgy)
         if _search_idx == -1:
             # アイテム新規作成
             ano_items_idx = -1
@@ -113,17 +118,19 @@ def mouse_event(event, x, y, flags, param):
             cv2.imshow(ano_window_name, makeshowimg())
         
     elif event == cv2.EVENT_LBUTTONDOWN:
-        _search_idx = _search_mouse_pos_idx(ano_items, imgx, imgy)
-        if _search_idx == -1:       #画面移動
-            start_mouse_pos = (imgx, imgy)
-        else:       #アイテム選択
-            ano_items_idx = _search_idx
+        move_roi = 0
+        _search_idx = _search_mouse_pos_idx(ano_items, ano_items_idx, imgx, imgy)
+        if _search_idx != -1 and _search_idx == ano_items_idx:
             item = ano_items[ano_items_idx]
             if imgx < item[0]+(item[2]/2) or imgy < item[1]+(item[3]/2):  #アイテム移動
                 move_roi = 1
                 move_roi_offset = (item[0]-imgx, item[1]-imgy)
             else:          #アイテム大きさ変更
                 move_roi = 2
+        else:
+            if _search_idx != -1:
+                ano_items_idx = -1
+            start_mouse_pos = (imgx, imgy)
         cv2.imshow(ano_window_name, makeshowimg())
         
     #マウス左ボタン解放時
@@ -131,26 +138,31 @@ def mouse_event(event, x, y, flags, param):
         if start_mouse_pos is not None:
             show_offset = (show_offset[0] + start_mouse_pos[0] - imgx , show_offset[1] + start_mouse_pos[1] - imgy)
             start_mouse_pos = None
+        if ano_items_idx == -1:
+            ano_items_idx = _search_mouse_pos_idx(ano_items, ano_items_idx, imgx, imgy)
         else:
-            if ano_items_idx >= 0:
-                item = ano_items[ano_items_idx]
-                if move_roi == 1:
-                    item[0:2] = imgx + move_roi_offset[0], imgy + move_roi_offset[1]
-                elif move_roi == 2:
-                    item[2:4] = imgx - item[0], imgy - item[1]
-                    # Rectの正規化
-                    if item[2] < 0:
-                        item[0] = item[0] + item[2]
-                        item[2] = item[2] * -1
-                    if item[3] < 0:
-                        item[1] = item[1] + item[3]
-                        item[3] = item[3] * -1
-                    if item[2] < 4 or item[3] < 4:             #サイズが小さいものは削除
-                        del ano_items[ano_items_idx]
+            item = ano_items[ano_items_idx]
+            if move_roi == 0:
+                pass
+            elif move_roi == 1:
+                item[0:2] = imgx + move_roi_offset[0], imgy + move_roi_offset[1]
+            elif move_roi == 2:
+                item[2:4] = imgx - item[0], imgy - item[1]
+            # Rectの正規化
+            if item[2] < 0:
+                item[0] = item[0] + item[2]
+                item[2] = item[2] * -1
+            if item[3] < 0:
+                item[1] = item[1] + item[3]
+                item[3] = item[3] * -1
+            if item[2] < 4 or item[3] < 4:             #サイズが小さいものは削除
+                del ano_items[ano_items_idx]
+                ano_items_idx = -1
+            move_roi = 0
         cv2.imshow(ano_window_name, makeshowimg())
         
     elif event == cv2.EVENT_RBUTTONDBLCLK:
-        _search_idx = _search_mouse_pos_idx(ano_items, imgx, imgy)
+        _search_idx = _search_mouse_pos_idx(ano_items, ano_items_idx, imgx, imgy)
         if ano_items_idx != -1 and _search_idx == ano_items_idx:
             del ano_items[ano_items_idx]
             ano_items_idx = -1
@@ -206,7 +218,9 @@ def mouse_event(event, x, y, flags, param):
         # cv2.imshow(ano_window_name, makeshowimg())
         
 def makeanno(anolist):
-    global ano_window_name, ano_imagename, ano_items, ano_items_idx, show_ano_image
+    global ano_window_name, ano_imagename
+    global show_ano_image, ano_items, ano_items_idx, show_disp_size, show_offset, show_scale
+    global start_mouse_pos, move_roi, move_roi_offset
     
     ano_items = []
     if type(anolist) is str:
@@ -225,14 +239,28 @@ def makeanno(anolist):
     cv2.setMouseCallback(ano_window_name, mouse_event)
     
     show_ano_image = cv2.imread(ano_imagename)
+    #画面初期化
+    ano_items_idx = -1
+    show_scale = int(min(show_disp_size[0] / show_ano_image.shape[1], show_disp_size[1] / show_ano_image.shape[0])*10)/10
+    show_offset = (-int((show_disp_size[0] - show_ano_image.shape[1]*show_scale)/2), -int((show_disp_size[1] - show_ano_image.shape[0]*show_scale)/2))
+    start_mouse_pos = None
+    move_roi = 0
+    move_roi_offset = None
+    
     while True:
         cv2.imshow(ano_window_name, makeshowimg())
         c = cv2.waitKey(0)
-        if c == ord('q'):
+        if c == ord('d'): #削除
+            if ano_items_idx != -1:
+                del ano_items[ano_items_idx]
+                ano_items_idx = -1
+        elif c == ord('c'): #コピー
+            if ano_items_idx != -1:
+                ano_items.append([ano_items[ano_items_idx][0]+5, ano_items[ano_items_idx][1]+5, ano_items[ano_items_idx][2], ano_items[ano_items_idx][3]])
+                ano_items_idx = len(ano_items)-1
+        else:
             break
-        
-    cv2.destroyWindow(ano_window_name)
-    return [ano_imagename, ano_items]
+    return c,[ano_imagename, ano_items]
     
 if __name__ == "__main__":
     makeanno("image.jpg")
