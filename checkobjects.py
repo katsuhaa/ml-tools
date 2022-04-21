@@ -54,8 +54,9 @@ def mainloop():
     i = 0
     while True:
         ret, posiitems[i] = aw.makeanno(posiitems[i])
-        if ret == ord('q'):
-            #キャンセル
+        if ret == ord('q') or ret == ord('e'):
+            #保存して終了
+            safe_saveposifile(posifilename, posiitems)
             break
         elif ret == ord('n'):
             #次
@@ -68,6 +69,10 @@ def mainloop():
         elif ret == ord('s'):
             #保存
             safe_saveposifile(posifilename, posiitems)
+        elif ret == ord('!'):
+            #強制終了
+            break
+    cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     mainloop()

@@ -23,40 +23,6 @@ start_mouse_pos = None
 move_roi = 0
 move_roi_offset = None
 
-def _show_shape(img, dsize, offset, scale):
-    poff = (max(0,offset[0]), max(0,offset[1]))
-    noff = (-min(0,offset[0]), -min(0,offset[1]))
-    clip = (int(min(dsize[0]/scale-noff[0], img.shape[1]-poff[0])),int(min(dsize[1]/scale-noff[1], img.shape[0]-poff[1])))
-    clipimg = img[poff[1]:poff[1] + clip[1], poff[0]:poff[0] + clip[0]]
-    resizeimg = cv2.resize(clipimg, (0,0), fx = scale, fy = scale)
-    showimg = np.ones((dsize[1], dsize[0], img.shape[2]), img.dtype) * 255
-    noffscale = (int(noff[0]*scale), int(noff[1]*scale))
-    showimg[noffscale[1]:noffscale[1] + resizeimg.shape[0], noffscale[0]:noffscale[0] + resizeimg.shape[1]] = resizeimg;
-    
-    cv2.imshow('dsize{} offset{} scale{}'.format(dsize, offset, scale), showimg)
-    
-def debug_shape():
-    img = cv2.imread("image.jpg")
-    
-    _show_shape(img, (1024,768), (0,0), 1.0)
-    _show_shape(img, (1024,768), (100,100), 1.0)
-    _show_shape(img, (1024,768), (-100,-100), 1.0)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    
-    _show_shape(img, (1024,768), (0,0), 2.0)
-    _show_shape(img, (1024,768), (100,100), 2.0)
-    _show_shape(img, (1024,768), (-100,-100), 2.0)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-    _show_shape(img, (1024,768), (0,0), 0.5)
-    _show_shape(img, (1024,768), (100,100), 0.5)
-    _show_shape(img, (1024,768), (-100,-100), 0.5)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-    
 def _check_mouse_pos(item, x, y):
     if x >= item[0] and x <= item[0]+item[2] and y >= item[1] and y <= item[1]+item[3]:
         return True
@@ -70,6 +36,17 @@ def _search_mouse_pos_idx(items, idx, x, y):
         if _check_mouse_pos(items[i], x, y):
             return i
     return -1
+
+def scale_updown(changes):
+    global show_disp_size, show_offset, show_scale
+    dispcenter = np.array(show_disp_size) / 2
+    imgc = dispcenter / show_scale + np.array(show_offset)
+    show_scale = show_scale + changes
+    if show_scale <= 0.1:
+        show_scale = 0.1
+    elif show_scale >= 5.0:
+        show_scale = 5.0
+    show_offset = (imgc - (dispcenter / show_scale)).astype(np.int)
 
 def _makeshowimg(img, items, itemidx, dsize = None, offset = (0,0), scale = 1.0):
     if dsize is None:
@@ -122,7 +99,7 @@ def mouse_event(event, x, y, flags, param):
         _search_idx = _search_mouse_pos_idx(ano_items, ano_items_idx, imgx, imgy)
         if _search_idx != -1 and _search_idx == ano_items_idx:
             item = ano_items[ano_items_idx]
-            if imgx < item[0]+(item[2]/2) or imgy < item[1]+(item[3]/2):  #アイテム移動
+            if imgx < item[0]+(item[2]*0.75) or imgy < item[1]+(item[3]*0.75):  #アイテム移動
                 move_roi = 1
                 move_roi_offset = (item[0]-imgx, item[1]-imgy)
             else:          #アイテム大きさ変更
@@ -198,24 +175,11 @@ def mouse_event(event, x, y, flags, param):
     elif event == cv2.EVENT_MOUSEWHEEL:   # macosだとこないっぽい
         pass
     elif event == cv2.EVENT_MOUSEHWHEEL:  # macosだとこないっぽい
-        old_scale = show_scale
         if flags < 0:
-            if show_scale >= 0.2:
-                show_scale = show_scale - 0.1
-        else:
-            if show_scale <= 4.9:
-                show_scale = show_scale + 0.1
-
-        # ds = np.array(show_disp_size)/2
-        # ims = ds / show_scale + show_offset
-        # show_offset = ((ds - ims/old_scale)*show_scale).astype(np.int)
-        # print("ds",ds,"ims",ims,"show_offset", show_offset, "show_scale", show_scale, "old_scale", old_scale)
+            scale_updown(-0.1)
+        elif flags > 0:
+            scale_updown(0.1)
         cv2.imshow(ano_window_name, makeshowimg())
-
-        # show_offset = (0,0)
-        # show_scale = 1.0
-        # start_mouse_pos = None
-        # cv2.imshow(ano_window_name, makeshowimg())
         
 def makeanno(anolist):
     global ano_window_name, ano_imagename
@@ -250,14 +214,18 @@ def makeanno(anolist):
     while True:
         cv2.imshow(ano_window_name, makeshowimg())
         c = cv2.waitKey(0)
-        if c == ord('d'): #削除
+        if c == ord('d') or c == 255: #削除 255=delキー
             if ano_items_idx != -1:
                 del ano_items[ano_items_idx]
                 ano_items_idx = -1
-        elif c == ord('c'): #コピー
+        elif c == ord('c'): #コピー 
             if ano_items_idx != -1:
                 ano_items.append([ano_items[ano_items_idx][0]+5, ano_items[ano_items_idx][1]+5, ano_items[ano_items_idx][2], ano_items[ano_items_idx][3]])
                 ano_items_idx = len(ano_items)-1
+        elif c == 85: #page up
+            scale_updown(0.1)
+        elif c == 86: #page down
+            scale_updown(-0.1)
         else:
             break
     return c,[ano_imagename, ano_items]
