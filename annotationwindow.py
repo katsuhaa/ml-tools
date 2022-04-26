@@ -226,6 +226,18 @@ def makeanno(anolist):
             scale_updown(0.1)
         elif c == 86: #page down
             scale_updown(-0.1)
+        elif c == 81:  # ←
+            if ano_items[ano_items_idx][0] > 0:
+                ano_items[ano_items_idx][0] = ano_items[ano_items_idx][0] - 1
+        elif c == 82:  # ↑
+            if ano_items[ano_items_idx][1] > 0:
+                ano_items[ano_items_idx][1] = ano_items[ano_items_idx][1] - 1
+        elif c == 83:  # →
+            if ano_items[ano_items_idx][0] + ano_items[ano_items_idx][2] < show_ano_image.shape[1]:
+                ano_items[ano_items_idx][0] = ano_items[ano_items_idx][0] + 1
+        elif c == 84:  # ↓
+            if ano_items[ano_items_idx][1] + ano_items[ano_items_idx][3] < show_ano_image.shape[0]:
+                ano_items[ano_items_idx][1] = ano_items[ano_items_idx][1] + 1
         else:
             break
     return c,[ano_imagename, ano_items]
