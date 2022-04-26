@@ -181,7 +181,7 @@ def mouse_event(event, x, y, flags, param):
             scale_updown(0.1)
         cv2.imshow(ano_window_name, makeshowimg())
         
-def makeanno(anolist):
+def makeanno(anolist, anolist_no = None):
     global ano_window_name, ano_imagename
     global show_ano_image, ano_items, ano_items_idx, show_disp_size, show_offset, show_scale
     global start_mouse_pos, move_roi, move_roi_offset
@@ -199,6 +199,10 @@ def makeanno(anolist):
         print("parameter error.")
         return None
 
+    if anolist_no is None:
+        ano_window_name = "#### {}".format(ano_imagename)
+    else:
+        ano_window_name = "#{} {}".format(anolist_no+1, ano_imagename)
     cv2.namedWindow(ano_window_name)
     cv2.setMouseCallback(ano_window_name, mouse_event)
     
@@ -240,6 +244,7 @@ def makeanno(anolist):
                 ano_items[ano_items_idx][1] = ano_items[ano_items_idx][1] + 1
         else:
             break
+    cv2.destroyWindow(ano_window_name)
     return c,[ano_imagename, ano_items]
     
 if __name__ == "__main__":

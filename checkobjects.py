@@ -53,7 +53,7 @@ def mainloop():
     posiitems = readposifile(posifilename)
     i = 0
     while True:
-        ret, posiitems[i] = aw.makeanno(posiitems[i])
+        ret, posiitems[i] = aw.makeanno(posiitems[i], i)
         if ret == ord('q') or ret == ord('e'):
             #保存して終了
             safe_saveposifile(posifilename, posiitems)
