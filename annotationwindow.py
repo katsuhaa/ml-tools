@@ -218,7 +218,6 @@ def makeanno(anolist, anolist_no = None):
     while True:
         cv2.imshow(ano_window_name, makeshowimg())
         c = cv2.waitKey(0)
-        print(c)
         if c == ord('d') or c == 255: #削除 255=delキー
             if ano_items_idx != -1:
                 del ano_items[ano_items_idx]
