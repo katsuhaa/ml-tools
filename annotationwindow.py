@@ -218,6 +218,7 @@ def makeanno(anolist, anolist_no = None):
     while True:
         cv2.imshow(ano_window_name, makeshowimg())
         c = cv2.waitKey(0)
+        print(c)
         if c == ord('d') or c == 255: #削除 255=delキー
             if ano_items_idx != -1:
                 del ano_items[ano_items_idx]
@@ -231,16 +232,16 @@ def makeanno(anolist, anolist_no = None):
         elif c == 86: #page down
             scale_updown(-0.1)
         elif c == 81:  # ←
-            if ano_items[ano_items_idx][0] > 0:
+            if ano_items_idx != -1 and ano_items[ano_items_idx][0] > 0:
                 ano_items[ano_items_idx][0] = ano_items[ano_items_idx][0] - 1
         elif c == 82:  # ↑
-            if ano_items[ano_items_idx][1] > 0:
+            if ano_items_idx != -1 and ano_items[ano_items_idx][1] > 0:
                 ano_items[ano_items_idx][1] = ano_items[ano_items_idx][1] - 1
         elif c == 83:  # →
-            if ano_items[ano_items_idx][0] + ano_items[ano_items_idx][2] < show_ano_image.shape[1]:
+            if ano_items_idx != -1 and ano_items[ano_items_idx][0] + ano_items[ano_items_idx][2] < show_ano_image.shape[1]:
                 ano_items[ano_items_idx][0] = ano_items[ano_items_idx][0] + 1
         elif c == 84:  # ↓
-            if ano_items[ano_items_idx][1] + ano_items[ano_items_idx][3] < show_ano_image.shape[0]:
+            if ano_items_idx != -1 and ano_items[ano_items_idx][1] + ano_items[ano_items_idx][3] < show_ano_image.shape[0]:
                 ano_items[ano_items_idx][1] = ano_items[ano_items_idx][1] + 1
         else:
             break
