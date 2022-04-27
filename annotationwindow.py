@@ -5,6 +5,9 @@ import numpy as np
 
 #im????で表示するwindow名称
 ano_window_name = "annotation window"
+# helpを表示するかどうか
+show_help = True
+show_help_text = "n:next p:previus a:append c:copy d:delete q:save and quit e:save and quit !:force quit"
 #imshowで表示しているイメージのすのやつ
 show_ano_image = None
 #現在の表示ウインドウ大きさ
@@ -72,8 +75,13 @@ def _makeshowimg(img, items, itemidx, dsize = None, offset = (0,0), scale = 1.0)
     return showimg
 
 def makeshowimg():
-    global show_ano_image, ano_items, ano_items_idx, show_disp_size, show_offset, show_scale
-    return _makeshowimg(show_ano_image.copy(), ano_items, ano_items_idx, show_disp_size, show_offset, show_scale)
+    global show_ano_image, ano_items, ano_items_idx, show_disp_size, show_offset, show_scale, show_help, show_help_text
+    
+    _img = _makeshowimg(show_ano_image.copy(), ano_items, ano_items_idx, show_disp_size, show_offset, show_scale)
+    if show_help is not None:
+        cv2.putText(_img, text=show_help_text, org=(0,20), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.0, color=(0,255,0), thickness=1, lineType=cv2.LINE_4)
+        
+    return _img
 
 #位置格納関数
 def mouse_event(event, x, y, flags, param):
@@ -183,7 +191,7 @@ def mouse_event(event, x, y, flags, param):
         
 def makeanno(anolist, anolist_no = None):
     global ano_window_name, ano_imagename
-    global show_ano_image, ano_items, ano_items_idx, show_disp_size, show_offset, show_scale
+    global show_ano_image, ano_items, ano_items_idx, show_disp_size, show_offset, show_scale, show_help, show_help_text
     global start_mouse_pos, move_roi, move_roi_offset
     
     ano_items = []
@@ -226,6 +234,21 @@ def makeanno(anolist, anolist_no = None):
             if ano_items_idx != -1:
                 ano_items.append([ano_items[ano_items_idx][0]+5, ano_items[ano_items_idx][1]+5, ano_items[ano_items_idx][2], ano_items[ano_items_idx][3]])
                 ano_items_idx = len(ano_items)-1
+        elif c == ord('a'): # 新規
+            dispcenter = np.array(show_disp_size) / 2
+            imgc = (dispcenter / show_scale + np.array(show_offset)).astype(np.int)
+            while True:
+                _search_idx = _search_mouse_pos_idx(ano_items, ano_items_idx, imgc[0]+10, imgc[1]+10)
+                if _search_idx == -1:
+                    break
+                imgc = imgc + 5
+            ano_items.append([imgc[0], imgc[1], 20, 20])
+            ano_items_idx = len(ano_items)-1
+        elif c == ord('h'):
+            if show_help is None:
+                show_help = 1
+            else:
+                show_help = None
         elif c == 85: #page up
             scale_updown(0.1)
         elif c == 86: #page down
