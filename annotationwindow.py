@@ -159,19 +159,15 @@ def mouse_event(event, x, y, flags, param):
         pass
 
     elif event == cv2.EVENT_MOUSEMOVE:
-        if (flags & cv2.EVENT_FLAG_RBUTTON) != 0:
-            pass
-        elif (flags & cv2.EVENT_FLAG_LBUTTON) != 0:
-            if start_mouse_pos is not None:
-                show_offset = (show_offset[0] + start_mouse_pos[0] - imgx , show_offset[1] + start_mouse_pos[1] - imgy)
-            else:
-                if ano_items_idx >= 0:
-                    item = ano_items[ano_items_idx]
-                    if move_roi == 1:
-                        item[0:2] = imgx + move_roi_offset[0], imgy + move_roi_offset[1]
-                    else:
-                        item[2:4] = imgx - item[0], imgy - item[1]
-            cv2.imshow(ano_window_name, makeshowimg())
+        if start_mouse_pos is not None:
+            show_offset = (show_offset[0] + start_mouse_pos[0] - imgx , show_offset[1] + start_mouse_pos[1] - imgy)
+        elif ano_items_idx >= 0 and move_roi != 0:
+            item = ano_items[ano_items_idx]
+            if move_roi == 1:
+                item[0:2] = imgx + move_roi_offset[0], imgy + move_roi_offset[1]
+            elif move_roi == 2:
+                item[2:4] = imgx - item[0], imgy - item[1]
+        cv2.imshow(ano_window_name, makeshowimg())
 
     # elif event == cv2.EVENT_RBUTTONUP:
     #     if show_scale > 1.9:
