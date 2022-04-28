@@ -7,7 +7,7 @@ import numpy as np
 ano_window_name = "annotation window"
 # helpを表示するかどうか
 show_help = True
-show_help_text = "n:next p:previus a:append c:copy d:delete q:save and quit e:save and quit !:force quit"
+show_help_text = ["n:next p:previus a:append c:copy d:delete q:save and quit e:save and quit !:force quit", "Allow keys:move position j,k:frame width i,m:frame height home:frame bigger end:frame smoller"]
 #imshowで表示しているイメージのすのやつ
 show_ano_image = None
 #現在の表示ウインドウ大きさ
@@ -79,7 +79,10 @@ def makeshowimg():
     
     _img = _makeshowimg(show_ano_image.copy(), ano_items, ano_items_idx, show_disp_size, show_offset, show_scale)
     if show_help is not None:
-        cv2.putText(_img, text=show_help_text, org=(0,20), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.0, color=(0,255,0), thickness=1, lineType=cv2.LINE_4)
+        pos = [0, 0]
+        for t in show_help_text:
+            pos[1] = pos[1] + 25
+            cv2.putText(_img, text=t, org=pos, fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.7, color=(0,255,0), thickness=1, lineType=cv2.LINE_4)
         
     return _img
 
@@ -261,6 +264,32 @@ def makeanno(anolist, anolist_no = None):
         elif c == 84:  # ↓
             if ano_items_idx != -1 and ano_items[ano_items_idx][1] + ano_items[ano_items_idx][3] < show_ano_image.shape[0]:
                 ano_items[ano_items_idx][1] = ano_items[ano_items_idx][1] + 1
+        elif c == 80:  # HOME
+            item = ano_items[ano_items_idx]
+            if item[2] > 4 and item[3] > 4:
+                item[2] = item[2] - 1
+                item[3] = item[3] - 1
+        elif c == 87:
+            item = ano_items[ano_items_idx]
+            if item[0] + item[2] < show_ano_image.shape[1] and item[1] + item[3] < show_ano_image.shape[0]:
+                item[2] = item[2] + 1
+                item[3] = item[3] + 1
+        elif c == ord('j'):
+            item = ano_items[ano_items_idx]
+            if item[2] > 4:
+                item[2] = item[2] - 1
+        elif c == ord('k'):
+            item = ano_items[ano_items_idx]
+            if item[0] + item[2] < show_ano_image.shape[1]:
+                item[2] = item[2] + 1
+        elif c == ord('i'):
+            item = ano_items[ano_items_idx]
+            if item[3] > 4:
+                item[3] = item[3] - 1
+        elif c == ord('m'):
+            item = ano_items[ano_items_idx]
+            if item[1] + item[3] < show_ano_image.shape[0]:
+                item[3] = item[3] + 1
         else:
             break
     cv2.destroyWindow(ano_window_name)
