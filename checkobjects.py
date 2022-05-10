@@ -5,6 +5,13 @@ import cv2
 import annotationwindow as aw
 import copy
 
+def initposifile(fname):
+    with open(fname, mode='w') as posif:
+        for path, subdirs, files in os.walk("target-image"):
+            for filename in files:
+                img_path = os.path.join(path, filename)
+                posif.write(str(img_path) + " 0 " +  os.linesep)
+
 def readposifile(fname):
     posiitems = None
     with open(fname) as posif:
@@ -12,6 +19,8 @@ def readposifile(fname):
         for line in posif:
             item = []
             linesplit = line.split()
+            if os.path.exists(linesplit[0]) is False:
+                continue
             item.append(linesplit[0])
             item.append([])
             for i in range(0, int(linesplit[1])*4, 4):
@@ -50,6 +59,10 @@ def drawhole(img, rect, color, thickness=1, lineType=cv2.LINE_8, shift=0):
 def mainloop():
 
     posifilename = 'posi.info'
+
+    if os.path.exists(posifilename) is False:
+        initposifile(posifilename)
+        
     posiitems = readposifile(posifilename)
     i = 0
     while True:
