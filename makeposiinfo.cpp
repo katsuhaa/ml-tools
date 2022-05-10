@@ -105,7 +105,6 @@ int main(int argc, const char* argv[])
 			continue;
 		}
 
-		printf("Image %s\n",scene1_path.c_str());
 		cv::Mat scene1 = cv::imread(scene1_path, cv::IMREAD_COLOR);
 		std::vector<cv::Rect> holes;
 		
@@ -120,6 +119,8 @@ int main(int argc, const char* argv[])
 			mkdir("objects/invalid", MKDIR_MODE777);
 		}
 
+		printf("Image %s holes %d\n",scene1_path.c_str(), holes.size());
+		
 		if (holes.size() > 0) {
 			write_file << cv::format("%s %ld ", scene1_path.c_str(), holes.size());
 			// 検出したイメージを１ファイルづつごとに仕分けして、ポジデータのフォーマットで記録

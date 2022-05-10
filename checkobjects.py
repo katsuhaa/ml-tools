@@ -56,7 +56,6 @@ def mainloop():
         ret, posiitems[i] = aw.makeanno(posiitems[i], i)
         if ret == ord('q') or ret == ord('e'):
             #保存して終了
-            safe_saveposifile(posifilename, posiitems)
             break
         elif ret == ord('n'):
             #次
@@ -71,7 +70,13 @@ def mainloop():
             safe_saveposifile(posifilename, posiitems)
         elif ret == ord('!'):
             #強制終了
-            break
+            cv2.destroyAllWindows()
+            return
+    safe_saveposifile(posifilename, posiitems)
+    objsum = 0
+    for pitem in posiitems:
+        objsum += len(pitem[1])
+    print(objsum)
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
