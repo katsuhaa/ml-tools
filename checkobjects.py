@@ -5,28 +5,28 @@ import cv2
 import annotationwindow as aw
 import copy
 
-def initposifile(fname):
-    with open(fname, mode='w') as posif:
-        for path, subdirs, files in os.walk("target-image"):
-            for filename in files:
-                img_path = os.path.join(path, filename)
-                posif.write(str(img_path) + " 0 " +  os.linesep)
+def initposiitems():
+    posiitems = []
+    for path, subdirs, files in os.walk("target-image"):
+        for filename in files:
+            item = []
+            img_path = os.path.join(path, filename)
+            item.append(str(img_path))
+            item.append([])
+            posiitems.append(item)
+    return posiitems
 
 def readposifile(fname):
-    posiitems = None
     with open(fname) as posif:
-        posiitems = []
+        posiitems = initposiitems()
         for line in posif:
-            item = []
             linesplit = line.split()
-            if os.path.exists(linesplit[0]) is False:
-                continue
-            item.append(linesplit[0])
-            item.append([])
-            for i in range(0, int(linesplit[1])*4, 4):
-                item[1].append( [int(linesplit[i2+2]) for i2 in range(i, i+4)] )
-            posiitems.append(item)
-    return posiitems;
+            for idx in range(len(posiitems)):
+                if posiitems[idx][0] == linesplit[0]:
+                    for i in range(0, int(linesplit[1])*4, 4):
+                        posiitems[idx][1].append( [int(linesplit[i2+2]) for i2 in range(i, i+4)] )
+                    break
+    return posiitems
 
 def saveposifile(fname, posiitem):
     with open(fname, mode='w') as posif:
@@ -36,6 +36,11 @@ def saveposifile(fname, posiitem):
                 rcs = '{} {} {} {} '.format(rc[0], rc[1], rc[2], rc[3])
                 outs += rcs
             posif.write(outs + '\n')
+
+def initposifile(fname):
+    posiitems = initposiitems()
+    saveposifile(fname, posiitems)
+
 
 def safe_saveposifile(fname, posiitem):
     bnamefmt = "{}.bak{}"
