@@ -4,8 +4,8 @@ classifier*
 target-image
 vec/
 negative/
-positive.dat
-negative.dat
+positive.dat*
+negative.dat*
 posi.info*
 posi?.info
-detectposi.info
+detectposi.info*
