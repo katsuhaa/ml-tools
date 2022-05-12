@@ -1,7 +1,6 @@
 *~
 __pycache__/
 classifier*
-makeposiinfo
 target-image
 vec/
 negative/
