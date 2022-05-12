@@ -8,15 +8,13 @@ import detectobjects
 default_posifilename = 'posi.info'
 
 def initposiitems():
-    posiitems = []
+    filelists = []
     for path, subdirs, files in os.walk("target-image"):
         for filename in files:
-            item = []
             img_path = os.path.join(path, filename)
-            item.append(str(img_path))
-            item.append([])
-            posiitems.append(item)
-    return posiitems
+            filelists.append(str(img_path))
+    filelists.sort()
+    return [ [ filename, [] ] for filename in filelists ]
 
 def readposifile(fname):
     with open(fname) as posif:
