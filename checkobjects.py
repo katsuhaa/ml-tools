@@ -1,9 +1,11 @@
 #!/usr/bin/python3
 # posiファイルから画像を表示して、位置の確認をします。
-import os
+import os,sys
 import cv2
-import annotationwindow as aw
-import copy
+import annotationwindow 
+import detectobjects
+
+default_posifilename = 'posi.info'
 
 def initposiitems():
     posiitems = []
@@ -61,9 +63,34 @@ def drawhole(img, rect, color, thickness=1, lineType=cv2.LINE_8, shift=0):
     center = (rect[0]+radius, rect[1]+radius)
     cv2.circle(img, center, radius, color, thickness, lineType, shift)
 
-def mainloop():
+def posiinfosum(posiitems):
+    #総数
+    resultsum = {}
+    objsum = 0
+    for pitem in posiitems:
+        objsum += len(pitem[1])
+    resultsum['posifilenum'] = len(posiitems)
+    resultsum['posinum'] = objsum
+    
+    # min max
+    wmin = 999999
+    wmax = 0
+    hmin = 999999
+    hmax = 0
+    for item in posiitems:
+        for rect in item[1]:
+            wmin = min(wmin, rect[2])
+            wmax = max(wmax, rect[2])
+            hmin = min(hmin, rect[3])
+            hmax = max(hmax, rect[3])
+    resultsum['widthmin'] = wmin
+    resultsum['widthmax'] = wmax
+    resultsum['heightmin'] = hmin
+    resultsum['heightmax'] = hmax
 
-    posifilename = 'posi.info'
+    return resultsum
+
+def mainloop(posifilename):
 
     if os.path.exists(posifilename) is False:
         initposifile(posifilename)
@@ -71,7 +98,7 @@ def mainloop():
     posiitems = readposifile(posifilename)
     i = 0
     while True:
-        ret, posiitems[i] = aw.makeanno(posiitems[i], i)
+        ret, posiitems[i] = annotationwindow.makeanno(posiitems[i], i)
         if ret == ord('q') or ret == ord('e'):
             #保存して終了
             break
@@ -90,16 +117,25 @@ def mainloop():
             #強制終了
             cv2.destroyAllWindows()
             return
+        elif ret == ord('r'):
+            #認識実行
+            posiitems[i][1] = detectobjects.get_cascaded_data(posiitems[i][0])
+            
     safe_saveposifile(posifilename, posiitems)
-    objsum = 0
-    for pitem in posiitems:
-        objsum += len(pitem[1])
-    print(objsum)
     cv2.destroyAllWindows()
+    return posiinfosum(posiitems)
+
 
 if __name__ == "__main__":
-    mainloop()
-    
+    global defalut_posifilename
+
+    posifilename = default_posifilename
+    if len(sys.argv) > 1:
+        posifilename = sys.argv[1]
+        
+    print( "posi filename {}".format(posifilename))
+    ret = mainloop(posifilename)
+    print(ret)
 
                 
                 

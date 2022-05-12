@@ -7,7 +7,7 @@ import numpy as np
 ano_window_name = "annotation window"
 # helpを表示するかどうか
 show_help = True
-show_help_text = ["n:next p:previus a:append c:copy d:delete q:save and quit e:save and quit !:force quit", "Allow keys:move position j,k:frame width i,m:frame height home:frame bigger end:frame smoller"]
+show_help_text = ["n:next p:previus a:append c:copy d:delete q:save and quit e:save and quit !:force quit", "Allow keys:move position j,k:frame width i,m:frame height home:frame bigger end:frame smoller","r:detect cascade"]
 #imshowで表示しているイメージのすのやつ
 show_ano_image = None
 #現在の表示ウインドウ大きさ
