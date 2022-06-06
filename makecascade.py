@@ -34,7 +34,7 @@ def makecascade():
     os.makedirs("classifier", exist_ok=True)
     # ./opencv_traincascade -data classifier -vec vec/positive.vec -bg holes_negative.dat -numPos 正解画像の枚数 -numNeg 不正解画像の枚数
     print("トレーニング実行")
-    ret = runsh("opencv_traincascade -data classifier -vec vec/positive.vec -bg negative.dat -numPos {} -numNeg {}".format(int(posinum*0.9), neganum))
+    ret = runsh("opencv_traincascade -numStages 23 -data classifier -vec vec/positive.vec -bg negative.dat -numPos {} -numNeg {}".format(int(posinum*0.9), neganum))
     print(" ret {}".format(ret)) 
           
 if __name__ == "__main__":

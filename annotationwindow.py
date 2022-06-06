@@ -212,6 +212,7 @@ def makeanno(anolist, anolist_no = None):
         ano_window_name = "#{} {}".format(anolist_no+1, ano_imagename)
     cv2.namedWindow(ano_window_name)
     cv2.setMouseCallback(ano_window_name, mouse_event)
+    cv2.moveWindow(ano_window_name, 100, 0)
     
     show_ano_image = cv2.imread(ano_imagename)
     #画面初期化
@@ -221,7 +222,7 @@ def makeanno(anolist, anolist_no = None):
     start_mouse_pos = None
     move_roi = 0
     move_roi_offset = None
-    
+
     while True:
         cv2.imshow(ano_window_name, makeshowimg())
         c = cv2.waitKey(0)

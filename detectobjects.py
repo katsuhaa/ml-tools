@@ -13,7 +13,7 @@ def get_cascaded_data(img_path):
     
     img = cv2.imread(img_path, cv2.IMREAD_COLOR)
     grayed = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    objs = cascade.detectMultiScale(grayed, minNeighbors = 5, minSize = (70,70) )
+    objs = cascade.detectMultiScale(grayed, minNeighbors = 2, minSize=(60,60)) #コンデンサ minSize=(70,70) スルーホール minSize=(8,8) maxSize=(30,30)
     print("image {} detect {}".format(img_path, objs))
     if len(objs) > 0:
         objs = objs.tolist()
