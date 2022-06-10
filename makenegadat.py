@@ -17,6 +17,7 @@ dir_path = None
 
 def makenegadat():
     global negafilenum, dat_path, dir_path
+    negafilenum = 0
     dat_path = negative_dat
     dir_path = negative_dir
 

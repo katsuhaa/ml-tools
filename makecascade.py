@@ -3,13 +3,14 @@
 import os,sys,subprocess
 import makenegadat
 import checkobjects
+import detectobjects
+import compposi
 
 def runsh(cmd):
     print(cmd)
     return subprocess.run(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
 
-def makecascade():
-    
+def makecascade(minhitrate = 0.995, numstages = 20):
     print("checkobject.pyで作成したposi.info target_image negativeを使ってcascade.xmlを作成します。")
     ret = runsh("cp posi.info positive.dat")
     print("positive情報を作成 ret{}".format(ret))
@@ -35,9 +36,32 @@ def makecascade():
     # ./opencv_traincascade -data classifier -vec vec/positive.vec -bg holes_negative.dat -numPos 正解画像の枚数 -numNeg 不正解画像の枚数
     print("トレーニング実行")
     #ret = runsh("opencv_traincascade -minHitRate 0.999 -featureType HAAR -numStages 20 -data classifier -vec vec/positive.vec -bg negative.dat -numPos {} -numNeg {}".format(int(posinum*0.95), neganum))
-    ret = runsh("opencv_traincascade -minHitRate 0.997 -numStages 23 -data classifier -vec vec/positive.vec -bg negative.dat -numPos {} -numNeg {}".format(int(posinum*0.9), neganum))
-    print(" ret {}".format(ret)) 
-          
-if __name__ == "__main__":
-    makecascade()
+    ret = runsh("opencv_traincascade -minHitRate {} -numStages {} -data classifier -vec vec/positive.vec -bg negative.dat -numPos {} -numNeg {}".format(minhitrate, numstages, int(posinum*0.95), neganum))
+    print(" ret {}".format(ret))
+    return ret
 
+def testcascade():
+    resultarray = {}
+    for minhitrate in range(994, 998, 1):
+        for numstages in range(10, 14, 1):
+            ret = makecascade(minhitrate/1000, numstages)
+            detectobjects.default_detect()
+            cantdetect, toomuch = compposi.compobject()
+            resultarray['{}-{}'.format(minhitrate, numstages)] = "検出できない {} 誤検出 {} returncode {}".format(cantdetect, toomuch, ret.returncode)
+            print("result ---------")
+            print(resultarray)
+            print("debug")
+            for result in resultarray:
+                print(result, resultarray[result])
+    return resultarray
+
+if __name__ == "__main__":
+    #command = "makecascade(0.997,18)"
+    command = "makecascade(0.995,17)"
+    
+    if len(sys.argv) > 1:
+        command = sys.argv[1]
+
+    print('exec ',command)
+    eval(command)
+    
